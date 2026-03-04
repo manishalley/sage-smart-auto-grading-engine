@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Results — SAGE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <nav class="navbar">
+    <div class="logo">
+      <a href="/" style="display:flex;align-items:center;gap:12px;text-decoration:none">
+        <div class="logo-icon">S</div>
+        <div class="logo-text">
+          <span class="logo-name">SAGE</span>
+          <span class="logo-sub">Smart Auto Grading Engine</span>
+        </div>
+      </a>
+    </div>
+    <a href="/report/{{ session_id }}" class="download-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+      </svg>
+      Download PDF Report
+    </a>
+  </nav>
+
+  <main class="container">
+
+    <div class="results-hero animate-in">
+      <div class="results-meta">
+        <h1>{{ evaluation.subject }}</h1>
+        {% if evaluation.student_name %}<p class="student-name">👤 {{ evaluation.student_name }}</p>{% endif %}
+        <p class="session-tag">Session #{{ session_id }}</p>
+      </div>
+      <div class="score-cards">
+        <div class="score-card animate-in" style="animation-delay:0.1s">
+          <div class="score-ring">
+            <span class="score-big" id="partATotal">{{ evaluation.totals.part_a_total }}</span>
+            <span class="score-denom">/{{ evaluation.totals.part_a_max }}</span>
+          </div>
+          <p>Part A</p>
+        </div>
+        <div class="score-card animate-in" style="animation-delay:0.2s">
+          <div class="score-ring">
+            <span class="score-big" id="partBTotal">{{ evaluation.totals.part_b_total }}</span>
+            <span class="score-denom">/{{ evaluation.totals.part_b_max }}</span>
+          </div>
+          <p>Part B</p>
+        </div>
+        <div class="score-card score-card-main animate-in" style="animation-delay:0.3s">
+          <div class="score-ring">
+            <span class="score-big" id="grandTotal">{{ evaluation.totals.grand_total }}</span>
+            <span class="score-denom">/{{ evaluation.totals.grand_max }}</span>
+          </div>
+          <p>Total Score</p>
+          <div class="grade-pill" id="gradeDisplay">{{ evaluation.totals.grade }}</div>
+        </div>
+        <div class="score-card animate-in" style="animation-delay:0.4s">
+          <div class="score-ring">
+            <span class="score-big" id="pctDisplay">{{ evaluation.totals.percentage }}</span>
+            <span class="score-denom">%</span>
+          </div>
+          <p>Percentage</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="override-bar" id="overrideBar" style="display:none">
+      <div class="override-bar-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        Unsaved overrides pending
+      </div>
+      <button class="save-override-btn" onclick="saveOverrides()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2zM17 21v-8H7v8M7 3v5h8"/>
+        </svg>
+        Save All Overrides
+      </button>
+    </div>
+
+    <div class="results-section animate-in" style="animation-delay:0.5s">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2>Part A</h2>
+          <span class="section-badge">Short Answers · Q1–Q10 · 1 mark each</span>
+        </div>
+        <div class="section-total">
+          <span id="partATotalLabel">{{ evaluation.totals.part_a_total }}</span> / 10
+        </div>
+      </div>
+
+      <div class="qa-grid">
+        {% for r in evaluation.part_a %}
+        <div class="qa-card {% if r.marks_awarded == r.max_marks %}qa-correct{% elif r.marks_awarded == 0 %}qa-wrong{% else %}qa-partial{% endif %}">
+          <div class="qa-header">
+            <span class="qa-num">{{ r.question }}</span>
+            <div class="mark-wrapper">
+              <input type="number"
+                     class="mark-input"
+                     data-q="{{ r.question }}"
+                     data-max="{{ r.max_marks }}"
+                     value="{{ r.teacher_override if r.teacher_override is not none else r.marks_awarded }}"
+                     min="0" max="{{ r.max_marks }}"
+                     onchange="markChanged(this)"/>
+              <span class="mark-sep">/{{ r.max_marks }}</span>
+              {% if r.teacher_override is not none %}<span class="override-chip">✎</span>{% endif %}
+            </div>
+          </div>
+          <div class="qa-body">
+            <div class="qa-row">
+              <span class="qa-label">Student</span>
+              <span class="qa-text">{{ r.student_answer or '—' }}</span>
+            </div>
+            <div class="qa-row">
+              <span class="qa-label correct-label">Key</span>
+              <span class="qa-text correct-text">{{ r.correct_answer }}</span>
+            </div>
+            <div class="qa-feedback">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              {{ r.ai_feedback }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="results-section animate-in" style="animation-delay:0.6s">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2>Part B</h2>
+          <span class="section-badge">Long Answers · Q11–Q20 · 10 marks each · 1 per unit</span>
+        </div>
+        <div class="section-total">
+          <span id="partBTotalLabel">{{ evaluation.totals.part_b_total }}</span> / 50
+        </div>
+      </div>
+
+      {% for r in evaluation.part_b %}
+      <div class="unit-card animate-in" style="animation-delay:{{ loop.index * 0.1 + 0.6 }}s">
+        <div class="unit-header">
+          <div class="unit-left">
+            <span class="unit-name">{{ r.unit }}</span>
+            {% if r.question != 'Not attempted' %}
+            <span class="unit-q">{{ r.question }}</span>
+            {% endif %}
+          </div>
+          <div class="unit-right">
+            {% if r.question != 'Not attempted' %}
+            <div class="mark-wrapper">
+              <input type="number"
+                     class="mark-input mark-input-lg"
+                     data-q="{{ r.question }}"
+                     data-max="{{ r.max_marks }}"
+                     value="{{ r.teacher_override if r.teacher_override is not none else r.marks_awarded }}"
+                     min="0" max="{{ r.max_marks }}"
+                     onchange="markChanged(this)"/>
+              <span class="mark-sep">/{{ r.max_marks }}</span>
+              {% if r.teacher_override is not none %}<span class="override-chip">✎ Override</span>{% endif %}
+            </div>
+            <div class="marks-bar">
+              <div class="marks-fill" style="width:{{ (r.teacher_override if r.teacher_override is not none else r.marks_awarded) * 10 }}%"></div>
+            </div>
+            {% else %}
+            <span class="not-attempted-badge">Not attempted</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if r.question != 'Not attempted' %}
+        <div class="unit-body">
+          <div class="ai-feedback-box">
+            <div class="ai-feedback-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+              AI Feedback
+            </div>
+            <p>{{ r.ai_feedback }}</p>
+          </div>
+
+          {% if r.concepts_covered or r.concepts_missing %}
+          <div class="concepts-row">
+            {% if r.concepts_covered %}
+            <div class="concepts-group">
+              <span class="concepts-label covered-label">✔ Covered</span>
+              <div class="chips">
+                {% for c in r.concepts_covered %}
+                <span class="chip chip-covered">{{ c }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+            {% if r.concepts_missing %}
+            <div class="concepts-group">
+              <span class="concepts-label missing-label">✘ Missing</span>
+              <div class="chips">
+                {% for c in r.concepts_missing %}
+                <span class="chip chip-missing">{{ c }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <details class="ans-details">
+            <summary>View student answer</summary>
+            <div class="ans-box">{{ r.student_answer }}</div>
+          </details>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+  </main>
+
+  <script>const SESSION_ID = "{{ session_id }}";</script>
+  <script src="{{ url_for('static', filename='js/results.js') }}"></script>
+</body>
+</html>

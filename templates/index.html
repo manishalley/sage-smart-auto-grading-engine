@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SAGE — Smart Auto Grading Engine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <nav class="navbar">
+    <div class="logo">
+      <div class="logo-icon">S</div>
+      <div class="logo-text">
+        <span class="logo-name">SAGE</span>
+        <span class="logo-sub">Smart Auto Grading Engine</span>
+      </div>
+    </div>
+    <div class="nav-status">
+      <span class="status-dot"></span>
+      <span>Ready to evaluate</span>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <div class="hero">
+      <div class="hero-badge animate-in" style="animation-delay:0.1s">
+        <span class="badge-dot"></span>
+        AI-Powered · Gemini OCR · Semantic Grading
+      </div>
+      <h1 class="hero-title animate-in" style="animation-delay:0.2s">
+        Grade smarter,<br/><em>not harder.</em>
+      </h1>
+      <p class="hero-desc animate-in" style="animation-delay:0.3s">
+        Upload an answer key. Upload a handwritten answer sheet.<br/>
+        SAGE reads, understands, and grades — you review and refine.
+      </p>
+      <div class="hero-stats animate-in" style="animation-delay:0.4s">
+        <div class="stat"><span class="stat-num">60</span><span class="stat-label">Marks Total</span></div>
+        <div class="stat-div"></div>
+        <div class="stat"><span class="stat-num">10</span><span class="stat-label">Part A Questions</span></div>
+        <div class="stat-div"></div>
+        <div class="stat"><span class="stat-num">5</span><span class="stat-label">Units · Part B</span></div>
+      </div>
+    </div>
+
+    <div class="steps-grid">
+
+      <div class="step-card animate-in" style="animation-delay:0.5s">
+        <div class="step-number">01</div>
+        <div class="step-icon-wrap">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h2>Upload Answer Key</h2>
+        <p>Provide correct answers as a JSON file with model answers and keywords for Part B.</p>
+
+        <div class="upload-zone" id="keyZone" onclick="document.getElementById('keyFile').click()">
+          <div class="upload-inner">
+            <div class="upload-pulse"></div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p><strong>answer_key.json</strong></p>
+            <span>Click to browse</span>
+          </div>
+          <input type="file" id="keyFile" accept=".json" hidden onchange="uploadKey(this)"/>
+        </div>
+        <div id="keyStatus" class="status-msg"></div>
+
+        <button class="sample-btn" onclick="toggleSample()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          View JSON template
+        </button>
+        <div id="sampleKey" class="code-block" style="display:none">
+<pre>{
+  "subject": "Data Structures",
+  "student_name": "",
+  "part_a": {
+    "Q1": "Stack follows LIFO principle.",
+    "Q2": "Binary search needs sorted array.",
+    "Q3": "...", "Q4": "...", "Q5": "...",
+    "Q6": "...", "Q7": "...", "Q8": "...",
+    "Q9": "...", "Q10": "..."
+  },
+  "part_b": {
+    "Q11": {
+      "answer": "Detailed model answer...",
+      "keywords": ["LIFO", "push", "pop"]
+    },
+    "Q12": { "answer": "...", "keywords": [] },
+    "Q13": { "answer": "...", "keywords": [] },
+    "Q14": { "answer": "...", "keywords": [] },
+    "Q15": { "answer": "...", "keywords": [] },
+    "Q16": { "answer": "...", "keywords": [] },
+    "Q17": { "answer": "...", "keywords": [] },
+    "Q18": { "answer": "...", "keywords": [] },
+    "Q19": { "answer": "...", "keywords": [] },
+    "Q20": { "answer": "...", "keywords": [] }
+  }
+}</pre>
+          <button class="copy-btn" onclick="copyKey()">📋 Copy template</button>
+        </div>
+      </div>
+
+      <div class="step-card animate-in" style="animation-delay:0.6s">
+        <div class="step-number">02</div>
+        <div class="step-icon-wrap">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+        </div>
+        <h2>Upload Answer Sheet</h2>
+        <p>Scan the student's handwritten answer sheet as a PDF or image. 300 DPI recommended for best OCR.</p>
+
+        <div class="upload-zone" id="sheetZone" onclick="document.getElementById('sheetFile').click()">
+          <div class="upload-inner">
+            <div class="upload-pulse"></div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p><strong>PDF / JPG / PNG</strong></p>
+            <span>Click to browse</span>
+          </div>
+          <input type="file" id="sheetFile" accept=".pdf,.jpg,.jpeg,.png" hidden onchange="previewSheet(this)"/>
+        </div>
+        <div id="sheetPreview"></div>
+      </div>
+
+      <div class="step-card step-card-wide animate-in" style="animation-delay:0.7s">
+        <div class="step-number">03</div>
+        <div class="step-icon-wrap">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+        <div class="step3-layout">
+          <div class="step3-info">
+            <h2>Run AI Evaluation</h2>
+            <p>SAGE OCRs the handwriting, splits questions, and grades Part A & B using Gemini AI with semantic understanding — not just keyword matching.</p>
+            <div class="pipeline">
+              <div class="pipe-step"><span>📄</span><small>PDF→Images</small></div>
+              <div class="pipe-arrow">›</div>
+              <div class="pipe-step"><span>🔧</span><small>Preprocess</small></div>
+              <div class="pipe-arrow">›</div>
+              <div class="pipe-step"><span>🔍</span><small>OCR</small></div>
+              <div class="pipe-arrow">›</div>
+              <div class="pipe-step"><span>✂️</span><small>Split Q&A</small></div>
+              <div class="pipe-arrow">›</div>
+              <div class="pipe-step"><span>🤖</span><small>AI Grade</small></div>
+              <div class="pipe-arrow">›</div>
+              <div class="pipe-step"><span>📊</span><small>Results</small></div>
+            </div>
+          </div>
+          <button class="eval-btn" id="evalBtn" onclick="runEvaluation()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Start Evaluation
+          </button>
+        </div>
+
+        <div id="evalStatus" class="status-msg" style="margin-top:16px"></div>
+
+        <div id="progressBar" class="progress-wrap" style="display:none">
+          <div class="progress-stages">
+            <div class="prog-stage" id="ps1">Converting</div>
+            <div class="prog-stage" id="ps2">Processing</div>
+            <div class="prog-stage" id="ps3">OCR</div>
+            <div class="prog-stage" id="ps4">Splitting</div>
+            <div class="prog-stage" id="ps5">Grading A</div>
+            <div class="prog-stage" id="ps6">Grading B</div>
+            <div class="prog-stage" id="ps7">Done</div>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <p id="progressLabel" class="prog-label">Initializing SAGE...</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
